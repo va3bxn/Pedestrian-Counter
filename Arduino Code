@@ -3,3 +3,6 @@
 include <LiquidCrystal.h> //16x2 display within this project
 include <SPI.h> //Serial Peripheral Interface, in this case used for MicroSD module
 include <SD.h> //MicroSD
+
+String h = "0";
+String m = "0";
