@@ -7,4 +7,4 @@ include <SD.h> //MicroSD
 String h = "0";
 String m = "0";
 
-int Flow = 0; //Placeholder name; other potential names: Uncertainty, cluster, 
+int Flow = 0; //Placeholder name; other potential names: uncertainty, cluster, standby*
