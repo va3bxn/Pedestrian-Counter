@@ -4,7 +4,7 @@ include <LiquidCrystal.h> //16x2 display within this project
 include <SPI.h> //Serial Peripheral Interface, in this case used for MicroSD module
 include <SD.h> //MicroSD
 
-String h = "0";
-String m = "0";
+String h = "0"; //Hour log
+String m = "0"; //Minute log
 
 int Flow = 0; //Placeholder name; other potential names: uncertainty, cluster, standby*
