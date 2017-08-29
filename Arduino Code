@@ -3,8 +3,10 @@
 // To Do: Program in a way to detect which output files have already been created and create a new one of (n+1) filename
 // in such a way that makes sense for temporal organization
 
-#include <LiquidCrystal.h>
-#include <SPI.h>
+//LCD (16x2 in this use case)
+#include <LiquidCrystal.h> 
+//SD card support
+#include <SPI.h> 
 #include <SD.h>
 
 LiquidCrystal lcd(7, 8, 9, 10, 3, 5); //11, 12
