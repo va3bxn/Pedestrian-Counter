@@ -1,10 +1,149 @@
-// Import/Utilize Libraries
+// To Do: Program in a way to detect which output files have already been created and create a new one of (n+1) filename
+// in such a way that makes sense for temporal organization
 
-include <LiquidCrystal.h> //16x2 display within this project
-include <SPI.h> //Serial Peripheral Interface, in this case used for MicroSD module
-include <SD.h> //MicroSD
+#include <LiquidCrystal.h>
+#include <SPI.h>
+#include <SD.h>
 
-String h = "0"; //Hour log
-String m = "0"; //Minute log
+LiquidCrystal lcd(7, 8, 9, 10, 3, 5); //11, 12
 
-int Flow = 0; //Placeholder name; other potential names: uncertainty, cluster, standby*
+int inputPin = 2;
+int pirState = LOW; //default PIR State
+int val = 0; // PIR input 
+int calibT = 11;
+int pedest = 0;
+int sustain = 0;
+String h = "0";
+String m = "0";
+int flow = 0;
+String prevH = "0";
+
+int chipSelect = 6;
+File file;
+
+void setup() {
+  Serial.begin(9600); //baud rate - PIR
+  pinMode(inputPin, INPUT); //PIR Sensor Input Pin
+  // set up the LCD's number of columns and rows:
+  lcd.begin(16, 2);
+
+  lcd.setCursor(0, 0); // (col, row)
+  lcd.print("Initializing");
+  delay (1000);
+  
+  pinMode(chipSelect, OUTPUT);
+  if (!SD.begin(chipSelect)){
+    lcd.setCursor(0, 0); // (col, row)
+    lcd.print("SDCARD INIT FALSE");
+    delay(1000);
+  }
+  else{
+    lcd.clear();
+    lcd.setCursor(0, 0); // (col, row)
+    lcd.print("SDCARD INIT TRUE");
+    delay(1000);
+  }
+  if (SD.exists("output.txt")){
+    lcd.clear();
+    lcd.setCursor(0, 0); // (col, row)
+    lcd.print("TXT Exists");
+    delay(1000);
+    if (SD.remove("output.txt") == true) {
+      lcd.clear();
+      lcd.setCursor(0, 0); // (col, row)
+      lcd.print("TXT REMOVED");
+      delay(1000);
+    }
+    else {
+      lcd.clear();
+      lcd.setCursor(0, 0); // (col, row)
+      lcd.print("TXT NOT REMOVED");
+      delay(1000);
+    }
+  }
+  else {
+    lcd.clear();
+    lcd.setCursor(0, 0); // (col, row)
+    lcd.print("TXT NOT FOUND");
+    delay(1000);
+    }
+
+  file = SD.open("output.txt", FILE_WRITE); //open file
+  if(file){
+    file.println("PedCount, Flow, RTHour, RTMinute");
+    file.close();
+   }
+   else {
+    lcd.setCursor(0, 0); // (col, row)
+    lcd.print("STATE: TXT FAIL");
+   }
+      
+  for (int i = 0; i < calibT; i++){
+    // Print a message to the LCD.
+    lcd.setCursor(0, 0); // (col, row)
+    lcd.print("Calibrate Sensor");
+    lcd.setCursor(0, 1); // (col, row)
+    lcd.print ("TimeRemaining:" + String (calibT - i));
+    delay(1000);
+    lcd.clear();
+  }
+}
+
+void loop() {
+  val = digitalRead(inputPin); //read PIR input
+  lcd.setCursor(0, 1); // (col, row)
+  file = SD.open("output.txt", FILE_WRITE); //open file
+  // print ped count, time in h and m since reset:
+  m = String ((millis() / 60000) - (60*(millis()/(60*60000))));
+  h = String (millis() / (60*60000));
+  lcd.print("P:" + String(pedest) + " F:" + String(flow) + " T:"+ h+":"+ m);
+  if (h != prevH){
+    file.println ("0," + String(flow) + "," + h + "," + m);
+    prevH = h;
+  }
+  if (val == HIGH){
+    if (pirState == LOW){
+      //motion detected
+      pirState = HIGH;
+      lcd.setCursor(0, 0); // (col, row)
+      lcd.print ("STATE: Detected ");
+      pedest++;
+      if(file){
+        file.println("1," + String(flow) + "," + h + "," + m);
+        file.close();
+        flow = 0;
+      }
+      else{
+        lcd.setCursor(0, 0); // (col, row)
+        lcd.print("STATE: TXT FAIL");
+      }
+      delay (3000);
+    }
+    else {
+      //motion sustained
+      lcd.setCursor(0, 0); // (col, row)
+      lcd.print ("STATE: Calculate");
+      sustain++;
+      if (sustain > 500){
+        flow++;
+        delay(1000);
+      }
+    }
+  }
+  else {
+    if(pirState == HIGH){
+      //motion ended
+      pirState = LOW;
+      lcd.setCursor(0, 0); // (col, row)
+      lcd.print ("STATE: Ped Evac ");
+      sustain = 0;
+      delay (1111);
+    }
+    else{
+      //motion not yet detected
+      lcd.setCursor(0, 0); // (col, row)
+      lcd.print ("STATE: Detecting");
+    }
+  }
+}
+
