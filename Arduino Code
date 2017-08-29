@@ -1,3 +1,5 @@
+//Note: Inefficient/unelegant hack job put together; to clean up in the future.
+
 // To Do: Program in a way to detect which output files have already been created and create a new one of (n+1) filename
 // in such a way that makes sense for temporal organization
 
