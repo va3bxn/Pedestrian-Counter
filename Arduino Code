@@ -9,7 +9,8 @@
 #include <SPI.h> 
 #include <SD.h>
 
-LiquidCrystal lcd(7, 8, 9, 10, 3, 5);
+//remember to accomodate digital pin allocation for the microSD module and PIR sensor
+LiquidCrystal lcd(7, 8, 9, 10, 3, 5); 
 
 int inputPin = 2;
 int pirState = LOW; //default PIR State
